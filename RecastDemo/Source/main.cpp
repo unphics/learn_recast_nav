@@ -581,7 +581,7 @@ int main(int /*argc*/, char** /*argv*/)
 				if (imguiButton("Build"))
 				{
 					ctx.resetLog();
-					if (!sample->handleBuild())
+					if (!sample->handleBuild()) // buildÁ÷³Ìin
 					{
 						showLog = true;
 						logScroll = 0;

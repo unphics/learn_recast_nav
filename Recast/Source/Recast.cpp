@@ -333,7 +333,7 @@ static void calcTriNormal(const float* v0, const float* v1, const float* v2, flo
 	rcVnormalize(faceNormal);
 }
 
-void rcMarkWalkableTriangles(rcContext* context, const float walkableSlopeAngle,
+void rcMarkWalkableTriangles(rcContext* context, const float walkableSlopeAngle/*可行走的角度*/,
                              const float* verts, const int numVerts,
                              const int* tris, const int numTris,
                              unsigned char* triAreaIDs)
@@ -343,12 +343,12 @@ void rcMarkWalkableTriangles(rcContext* context, const float walkableSlopeAngle,
 
 	const float walkableThr = cosf(walkableSlopeAngle / 180.0f * RC_PI);
 
-	float norm[3];
+	float norm[3]; // 三角形的法向量
 
 	for (int i = 0; i < numTris; ++i)
 	{
-		const int* tri = &tris[i * 3];
-		calcTriNormal(&verts[tri[0] * 3], &verts[tri[1] * 3], &verts[tri[2] * 3], norm);
+		const int* tri = &tris[i * 3]; // 三角形三个顶点的索引
+		calcTriNormal(&verts[tri[0] * 3], &verts[tri[1] * 3], &verts[tri[2] * 3], norm); // 垂直于三角形的法向量, 传入的参数是三角形三个顶点的x地址
 		// Check if the face is walkable.
 		if (norm[1] > walkableThr)
 		{

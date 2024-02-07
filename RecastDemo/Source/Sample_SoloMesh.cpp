@@ -382,10 +382,10 @@ bool Sample_SoloMesh::handleBuild()
 	const float* verts = m_geom->getMesh()->getVerts();
 	const int nverts = m_geom->getMesh()->getVertCount();
 	const int* tris = m_geom->getMesh()->getTris();
-	const int ntris = m_geom->getMesh()->getTriCount();
+	const int ntris = m_geom->getMesh()->getTriCount(); // 三角形个数
 	
 	//
-	// Step 1. Initialize build config.
+	// Step 1. Initialize build config. // 初始化配置
 	//
 	
 	// Init build configuration from GUI
@@ -422,10 +422,10 @@ bool Sample_SoloMesh::handleBuild()
 	m_ctx->log(RC_LOG_PROGRESS, " - %.1fK verts, %.1fK tris", nverts/1000.0f, ntris/1000.0f);
 	
 	//
-	// Step 2. Rasterize input polygon soup.
+	// Step 2. Rasterize input polygon soup. // 光栅化
 	//
 	
-	// Allocate voxel heightfield where we rasterize our input data to.
+	// Allocate voxel heightfield where we rasterize our input data to. // 分配体素高度场，我们将输入数据光栅化到该高度场。
 	m_solid = rcAllocHeightfield();
 	if (!m_solid)
 	{
@@ -451,6 +451,11 @@ bool Sample_SoloMesh::handleBuild()
 	// Find triangles which are walkable based on their slope and rasterize them.
 	// If your input data is multiple meshes, you can transform them here, calculate
 	// the are type for each of the meshes and rasterize them.
+	/**
+	 * 根据三角形的坡度查找可行走的三角形，并对其进行光栅化。
+	 * 如果你的输入数据是多个网格，你可以在这里变换它们，计算
+	 * 每个网格的are类型并对其进行光栅化。
+	 */
 	memset(m_triareas, 0, ntris*sizeof(unsigned char));
 	rcMarkWalkableTriangles(m_ctx, m_cfg.walkableSlopeAngle, verts, nverts, tris, ntris, m_triareas);
 	if (!rcRasterizeTriangles(m_ctx, verts, nverts, tris, m_triareas, ntris, *m_solid, m_cfg.walkableClimb))

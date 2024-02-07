@@ -312,18 +312,18 @@ static bool rasterizeTri(const float* v0, const float* v1, const float* v2,
 	// Calculate the bounding box of the triangle.
 	float triBBMin[3];
 	rcVcopy(triBBMin, v0);
-	rcVmin(triBBMin, v1);
+	rcVmin(triBBMin, v1); // 哪个点的数值小就用哪个
 	rcVmin(triBBMin, v2);
 
 	float triBBMax[3];
-	rcVcopy(triBBMax, v0);
+	rcVcopy(triBBMax, v0); // 哪个点的数值大就用哪个
 	rcVmax(triBBMax, v1);
 	rcVmax(triBBMax, v2);
 
 	// If the triangle does not touch the bounding box of the heightfield, skip the triangle.
 	if (!overlapBounds(triBBMin, triBBMax, heightfieldBBMin, heightfieldBBMax))
 	{
-		return true;
+		return true; // 如果三角形与边界框(NavVolume)相交, 则忽略此三角形
 	}
 
 	const int w = heightfield.width;
@@ -331,19 +331,22 @@ static bool rasterizeTri(const float* v0, const float* v1, const float* v2,
 	const float by = heightfieldBBMax[1] - heightfieldBBMin[1];
 
 	// Calculate the footprint of the triangle on the grid's z-axis
-	int z0 = (int)((triBBMin[2] - heightfieldBBMin[2]) * inverseCellSize);
+	int z0 = (int)((triBBMin[2] - heightfieldBBMin[2]) * inverseCellSize); // 没懂为啥乘inverseCellSize
 	int z1 = (int)((triBBMax[2] - heightfieldBBMin[2]) * inverseCellSize);
 
 	// use -1 rather than 0 to cut the polygon properly at the start of the tile
-	z0 = rcClamp(z0, -1, h - 1);
+	z0 = rcClamp(z0, -1, h - 1); // 没懂这个钳制
 	z1 = rcClamp(z1, 0, h - 1);
 
 	// Clip the triangle into all grid cells it touches.
+	// 4的意义:下面的in inrow p1 p2四份等长数据，这些数据里存的是多边形，即顶点坐标
+	// 3的意义:存的是顶点，所以3个float， x y z
+	// 7的意义:对三角形切割时，切出来的一个格子，最多可变成一个7边形
 	float buf[7 * 3 * 4];
-	float* in = buf;
-	float* inRow = buf + 7 * 3;
-	float* p1 = inRow + 7 * 3;
-	float* p2 = p1 + 7 * 3;
+	float* in = buf; // in指向buf的起始位置, 用于存储三角形的顶点数据
+	float* inRow = buf + 7 * 3; // inrow指向buf的第7*3个float值的位置, 用于存储裁剪结果的顶点数据
+	float* p1 = inRow + 7 * 3; // p1指向buf的第14*3个float值的位置, 用于存储裁剪过程中的临时数据
+	float* p2 = p1 + 7 * 3; // p2指向buf的第21*3个float值的位置, 用于存储裁剪过程中的临时数据
 
 	rcVcopy(&in[0], v0);
 	rcVcopy(&in[1 * 3], v1);
@@ -351,7 +354,7 @@ static bool rasterizeTri(const float* v0, const float* v1, const float* v2,
 	int nvRow;
 	int nvIn = 3;
 
-	for (int z = z0; z <= z1; ++z)
+	for (int z = z0; z <= z1; ++z) // 先切高度
 	{
 		// Clip polygon to row. Store the remaining polygon as well
 		const float cellZ = heightfieldBBMin[2] + (float)z * cellSize;
@@ -474,6 +477,7 @@ bool rcRasterizeTriangle(rcContext* context,
 	return true;
 }
 
+// 光栅化
 bool rcRasterizeTriangles(rcContext* context,
                           const float* verts, const int /*nv*/,
                           const int* tris, const unsigned char* triAreaIDs, const int numTris,
@@ -481,14 +485,14 @@ bool rcRasterizeTriangles(rcContext* context,
 {
 	rcAssert(context != NULL);
 
-	rcScopedTimer timer(context, RC_TIMER_RASTERIZE_TRIANGLES);
+	rcScopedTimer timer(context, RC_TIMER_RASTERIZE_TRIANGLES); // 处理超时用的
 	
 	// Rasterize the triangles.
-	const float inverseCellSize = 1.0f / heightfield.cs;
+	const float inverseCellSize = 1.0f / heightfield.cs; // 逆单元格大小
 	const float inverseCellHeight = 1.0f / heightfield.ch;
 	for (int triIndex = 0; triIndex < numTris; ++triIndex)
 	{
-		const float* v0 = &verts[tris[triIndex * 3 + 0] * 3];
+		const float* v0 = &verts[tris[triIndex * 3 + 0] * 3]; // 三角形第一个点的数组指针
 		const float* v1 = &verts[tris[triIndex * 3 + 1] * 3];
 		const float* v2 = &verts[tris[triIndex * 3 + 2] * 3];
 		if (!rasterizeTri(v0, v1, v2, triAreaIDs[triIndex], heightfield, heightfield.bmin, heightfield.bmax, heightfield.cs, inverseCellSize, inverseCellHeight, flagMergeThreshold))
