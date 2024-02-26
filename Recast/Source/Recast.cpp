@@ -333,6 +333,7 @@ static void calcTriNormal(const float* v0, const float* v1, const float* v2, flo
 	rcVnormalize(faceNormal);
 }
 
+// zys note: 标记可行走三角形
 void rcMarkWalkableTriangles(rcContext* context, const float walkableSlopeAngle/*可行走的角度*/,
                              const float* verts, const int numVerts,
                              const int* tris, const int numTris,
@@ -348,6 +349,10 @@ void rcMarkWalkableTriangles(rcContext* context, const float walkableSlopeAngle/
 	for (int i = 0; i < numTris; ++i)
 	{
 		const int* tri = &tris[i * 3]; // 三角形三个顶点的索引
+		/**
+		 * 对于每个三角形, 使其两个变叉乘得到这个三角形的法向量, 然后对其归一化处理
+		 * 此时单位法向量的Y坐标(recast_nav是右手坐标系, Y是上方向, 单位向量的Y倾斜cos = 临边(Y的高度) : 斜边(单位长度1))
+		 */
 		calcTriNormal(&verts[tri[0] * 3], &verts[tri[1] * 3], &verts[tri[2] * 3], norm); // 垂直于三角形的法向量, 传入的参数是三角形三个顶点的x地址
 		// Check if the face is walkable.
 		if (norm[1] > walkableThr)
