@@ -107,6 +107,7 @@ static bool addSpan(rcHeightfield& heightfield,
                     const unsigned short min, const unsigned short max,
                     const unsigned char areaID, const int flagMergeThreshold)
 {
+	// zys note: 没懂
 	// Create the new span.
 	rcSpan* newSpan = allocSpan(heightfield);
 	if (newSpan == NULL)
@@ -477,7 +478,7 @@ bool rcRasterizeTriangle(rcContext* context,
 	return true;
 }
 
-// 光栅化
+// zys note: 光栅化, 紧跟着构建高度场
 bool rcRasterizeTriangles(rcContext* context,
                           const float* verts, const int /*nv*/,
                           const int* tris, const unsigned char* triAreaIDs, const int numTris,
